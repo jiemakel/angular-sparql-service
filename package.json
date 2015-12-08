@@ -1,0 +1,15 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "devDependencies": {
+    "del": "^2.2.0",
+    "gulp-load-plugins": "^1.1.0",
+    "gulp-notify": "^2.2.0",
+    "gulp-plumber": "^1.0.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.10.0",
+    "gulp-typescript-angular": "^0.1.1",
+    "gulp-watch": "^4.3.5",
+    "merge2": "^0.3.6"
+  }
+}

@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es5",
+        "rootDir": "src",
+        "outDir": ".tmp",
+        "declaration": true
+    },
+    "filesGlob": [
+        "src/**/*.ts",
+        "typings/**/*.d.ts"
+    ],
+    "files": [
+        "src/sparql-service.ts",
+        "typings/angularjs/angular.d.ts",
+        "typings/jquery/jquery.d.ts",
+        "typings/tsd.d.ts"
+    ],
+    "exclude": [],
+    "atom": {
+        "rewriteTsconfig": true
+    }
+}
