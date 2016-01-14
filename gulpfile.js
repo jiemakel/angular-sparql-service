@@ -10,8 +10,7 @@ gulp.task('build', function() {
   return require('merge2')(
     tsResult.js
       .pipe($.typescriptAngular({ moduleName: 'fi.seco.sparql' }))
-      .pipe($.sourcemaps.write('.'))
-    ,
+      .pipe($.sourcemaps.write('.')),
     tsResult.dts).pipe(gulp.dest('dist'));
 });
 
@@ -23,4 +22,6 @@ gulp.task('clean', function(cb) {
   return require('del')(['dist'], cb);
 });
 
-require('gulp').task('default', ['build'])
+require('gulp').task('default', function(cb) {
+  return require('run-sequence')('clean','build', cb);
+});

@@ -16,7 +16,6 @@
         "typings/jquery/jquery.d.ts",
         "typings/tsd.d.ts"
     ],
-    "exclude": [],
     "atom": {
         "rewriteTsconfig": true
     }
