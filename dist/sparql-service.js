@@ -11,6 +11,58 @@ var fi;
                     this.$http = $http;
                     this.$q = $q;
                 }/*<auto_generate>*/SparqlService.$inject = ['$http','$q']; SparqlService.$componentName = 'sparqlService'/*</auto_generate>*/
+                SparqlService.stringToSPARQLString = function (string) {
+                    return '"' + string.replace(/"/g, '\\"') + '"';
+                };
+                SparqlService.bindingsToObject = function (result) {
+                    var ret = {};
+                    for (var key in result) {
+                        ret[key] = SparqlService.bindingToValue(result[key]);
+                    }
+                    return ret;
+                };
+                SparqlService.bindingToValue = function (binding) {
+                    if (binding == null)
+                        return undefined;
+                    if (binding.type === 'uri')
+                        return binding.value;
+                    else if (binding.type === 'bnode')
+                        return binding.value;
+                    else if (binding.datatype !== null)
+                        switch (binding.datatype) {
+                            case 'http://www.w3.org/2001/XMLSchema#integer':
+                            case 'http://www.w3.org/2001/XMLSchema#decimal': return parseInt(binding.value, 10);
+                            case 'http://www.w3.org/2001/XMLSchema#float':
+                            case 'http://www.w3.org/2001/XMLSchema#double': return parseFloat(binding.value);
+                            case 'http://www.w3.org/2001/XMLSchema#boolean': return binding.value ? true : false;
+                            default:
+                        }
+                    return binding.value;
+                };
+                SparqlService.bindingToString = function (binding) {
+                    if (binding == null)
+                        return 'UNDEF';
+                    else {
+                        var value = binding.value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\b]/g, '\\b').replace(/\f/g, '\\f').replace(/\"/g, '\\"').replace(/\'/g, '\\\'');
+                        if (binding.type === 'uri')
+                            return '<' + value + '>';
+                        else if (binding.type === 'bnode')
+                            return '_:' + value;
+                        else if (binding.datatype !== null)
+                            switch (binding.datatype) {
+                                case 'http://www.w3.org/2001/XMLSchema#integer':
+                                case 'http://www.w3.org/2001/XMLSchema#decimal':
+                                case 'http://www.w3.org/2001/XMLSchema#double':
+                                case 'http://www.w3.org/2001/XMLSchema#boolean': return value;
+                                case 'http://www.w3.org/2001/XMLSchema#string': return '"' + value + '"';
+                                default: return '"' + value + '"^^<' + binding.datatype + '>';
+                            }
+                        else if (binding['xml:lang'])
+                            return '"' + value + '"@' + binding['xml:lang'];
+                        else
+                            return '"' + value + '"';
+                    }
+                };
                 SparqlService.prototype.check = function (endpoint, params) {
                     var deferred = this.$q.defer();
                     this.$http(angular.extend({
@@ -119,58 +171,6 @@ var fi;
                         headers: { 'Content-Type': 'application/sparql-update' },
                         data: query
                     }, params));
-                };
-                SparqlService.prototype.stringToSPARQLString = function (string) {
-                    return '"' + string.replace(/"/g, '\\"') + '"';
-                };
-                SparqlService.prototype.bindingsToObject = function (result) {
-                    var ret = {};
-                    for (var key in result) {
-                        ret[key] = this.bindingToValue(result[key]);
-                    }
-                    return ret;
-                };
-                SparqlService.prototype.bindingToValue = function (binding) {
-                    if (binding == null)
-                        return undefined;
-                    if (binding.type === 'uri')
-                        return binding.value;
-                    else if (binding.type === 'bnode')
-                        return binding.value;
-                    else if (binding.datatype !== null)
-                        switch (binding.datatype) {
-                            case 'http://www.w3.org/2001/XMLSchema#integer':
-                            case 'http://www.w3.org/2001/XMLSchema#decimal': return parseInt(binding.value, 10);
-                            case 'http://www.w3.org/2001/XMLSchema#float':
-                            case 'http://www.w3.org/2001/XMLSchema#double': return parseFloat(binding.value);
-                            case 'http://www.w3.org/2001/XMLSchema#boolean': return binding.value ? true : false;
-                            default:
-                        }
-                    return binding.value;
-                };
-                SparqlService.prototype.bindingToString = function (binding) {
-                    if (binding == null)
-                        return 'UNDEF';
-                    else {
-                        var value = binding.value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\b]/g, '\\b').replace(/\f/g, '\\f').replace(/\"/g, '\\"').replace(/\'/g, '\\\'');
-                        if (binding.type === 'uri')
-                            return '<' + value + '>';
-                        else if (binding.type === 'bnode')
-                            return '_:' + value;
-                        else if (binding.datatype !== null)
-                            switch (binding.datatype) {
-                                case 'http://www.w3.org/2001/XMLSchema#integer':
-                                case 'http://www.w3.org/2001/XMLSchema#decimal':
-                                case 'http://www.w3.org/2001/XMLSchema#double':
-                                case 'http://www.w3.org/2001/XMLSchema#boolean': return value;
-                                case 'http://www.w3.org/2001/XMLSchema#string': return '"' + value + '"';
-                                default: return '"' + value + '"^^<' + binding.datatype + '>';
-                            }
-                        else if (binding['xml:lang'])
-                            return '"' + value + '"@' + binding['xml:lang'];
-                        else
-                            return '"' + value + '"';
-                    }
                 };
                 return SparqlService;
             })();/*<auto_generate>*/angular.module('fi.seco.sparql').service('sparqlService',SparqlService);/*</auto_generate>*/

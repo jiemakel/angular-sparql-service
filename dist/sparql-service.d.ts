@@ -22,6 +22,12 @@ declare namespace fi.seco.sparql {
     class SparqlService {
         private $http;
         private $q;
+        static stringToSPARQLString(string: any): string;
+        static bindingsToObject<T>(result: {
+            [id: string]: ISparqlBinding;
+        }): T;
+        static bindingToValue(binding: ISparqlBinding): any;
+        static bindingToString(binding: ISparqlBinding): string;
         constructor($http: angular.IHttpService, $q: angular.IQService);
         check(endpoint: string, params?: {}): angular.IPromise<boolean>;
         checkUpdate(endpoint: string, params?: {}): angular.IPromise<boolean>;
@@ -35,11 +41,5 @@ declare namespace fi.seco.sparql {
         }>(endpoint: string, query: string, params?: {}): angular.IHttpPromise<ISparqlBindingResult<T>>;
         construct(endpoint: string, query: string, params?: {}): angular.IPromise<string>;
         update(endpoint: string, query: string, params?: {}): angular.IPromise<string>;
-        stringToSPARQLString(string: any): string;
-        bindingsToObject<T>(result: {
-            [id: string]: ISparqlBinding;
-        }): T;
-        bindingToValue(binding: ISparqlBinding): any;
-        bindingToString(binding: ISparqlBinding): string;
     }
 }

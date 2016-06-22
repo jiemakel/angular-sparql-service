@@ -5,8 +5,8 @@ namespace fi.seco.sparql {
   export interface ISparqlBinding {
     type: string,
     value: string,
-    'xml:lang'? : string,
-    datatype? : string
+    'xml:lang'?: string,
+    datatype?: string
   }
 
   export interface ISparqlBindingResult<BindingType extends {[id: string]: ISparqlBinding}> {
@@ -24,6 +24,48 @@ namespace fi.seco.sparql {
   }
 
   export class SparqlService {
+    public static stringToSPARQLString(string): string {
+      return '"' + string.replace(/"/g, '\\"') + '"'
+    }
+    public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}): T {
+      let ret: {} = {}
+      for (let key in result) {
+        ret[key] = SparqlService.bindingToValue(result[key])
+      }
+      return <T>ret
+    }
+    public static bindingToValue(binding: ISparqlBinding): any {
+      if (binding == null) return undefined
+      if (binding.type === 'uri') return binding.value
+      else if (binding.type === 'bnode') return binding.value
+      else if (binding.datatype !== null) switch (binding.datatype) {
+        case 'http://www.w3.org/2001/XMLSchema#integer':
+        case 'http://www.w3.org/2001/XMLSchema#decimal': return parseInt(binding.value, 10)
+        case 'http://www.w3.org/2001/XMLSchema#float':
+        case 'http://www.w3.org/2001/XMLSchema#double': return parseFloat(binding.value)
+        case 'http://www.w3.org/2001/XMLSchema#boolean': return binding.value ? true : false
+        default:
+      }
+      return binding.value
+    }
+    public static bindingToString(binding: ISparqlBinding): string {
+      if (binding == null) return 'UNDEF'
+      else {
+        let value: string = binding.value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\b]/g, '\\b').replace(/\f/g, '\\f').replace(/\"/g, '\\"').replace(/\'/g, '\\\'')
+        if (binding.type === 'uri') return '<' + value + '>'
+        else if (binding.type === 'bnode') return '_:' + value
+        else if (binding.datatype !== null) switch (binding.datatype) {
+          case 'http://www.w3.org/2001/XMLSchema#integer':
+          case 'http://www.w3.org/2001/XMLSchema#decimal':
+          case 'http://www.w3.org/2001/XMLSchema#double':
+          case 'http://www.w3.org/2001/XMLSchema#boolean': return value
+          case 'http://www.w3.org/2001/XMLSchema#string': return '"' + value + '"'
+          default: return '"' + value + '"^^<' + binding.datatype + '>'
+        }
+        else if (binding['xml:lang']) return '"' + value + '"@' + binding['xml:lang']
+        else return '"' + value + '"'
+      }
+    }
     constructor(private $http: angular.IHttpService, private $q: angular.IQService) {}
     public check(endpoint: string, params?: {}): angular.IPromise<boolean> {
       let deferred: angular.IDeferred<any> = this.$q.defer()
@@ -79,7 +121,7 @@ namespace fi.seco.sparql {
       )
       return deferred.promise;
     }
-    public get(endpoint: string, graphIRI? : string, params? : {}): angular.IHttpPromise<string> {
+    public get(endpoint: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string> {
       return this.$http(
         angular.extend(
           {
@@ -92,7 +134,7 @@ namespace fi.seco.sparql {
         )
       )
     }
-    public post(endpoint: string, graph: string, graphIRI?: string, params? : {}): angular.IHttpPromise<string> {
+    public post(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string> {
       return this.$http(
         angular.extend(
           {
@@ -106,7 +148,7 @@ namespace fi.seco.sparql {
         )
       )
     }
-    public put(endpoint: string, graph: string, graphIRI?: string, params? : {}): angular.IHttpPromise<string> {
+    public put(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string> {
       return this.$http(
         angular.extend(
           {
@@ -202,48 +244,6 @@ namespace fi.seco.sparql {
           params
         )
       )
-    }
-    public stringToSPARQLString(string): string {
-      return '"' + string.replace(/"/g, '\\"') + '"'
-    }
-    public bindingsToObject<T>(result: {[id: string]: ISparqlBinding}): T {
-      let ret: {} = {}
-      for (let key in result) {
-        ret[key] = this.bindingToValue(result[key])
-      }
-      return <T>ret
-    }
-    public bindingToValue(binding: ISparqlBinding): any {
-      if (binding == null) return undefined
-      if (binding.type === 'uri') return binding.value
-      else if (binding.type === 'bnode') return binding.value
-      else if (binding.datatype !== null) switch (binding.datatype) {
-        case 'http://www.w3.org/2001/XMLSchema#integer':
-        case 'http://www.w3.org/2001/XMLSchema#decimal': return parseInt(binding.value, 10)
-        case 'http://www.w3.org/2001/XMLSchema#float':
-        case 'http://www.w3.org/2001/XMLSchema#double': return parseFloat(binding.value)
-        case 'http://www.w3.org/2001/XMLSchema#boolean': return binding.value ? true : false
-        default:
-      }
-      return binding.value
-    }
-    public bindingToString(binding: ISparqlBinding): string {
-      if (binding == null) return 'UNDEF'
-      else {
-        let value: string = binding.value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\b]/g, '\\b').replace(/\f/g, '\\f').replace(/\"/g, '\\"').replace(/\'/g, '\\\'')
-        if (binding.type === 'uri') return '<' + value + '>'
-        else if (binding.type === 'bnode') return '_:' + value
-        else if (binding.datatype !== null) switch (binding.datatype) {
-          case 'http://www.w3.org/2001/XMLSchema#integer':
-          case 'http://www.w3.org/2001/XMLSchema#decimal':
-          case 'http://www.w3.org/2001/XMLSchema#double':
-          case 'http://www.w3.org/2001/XMLSchema#boolean': return value
-          case 'http://www.w3.org/2001/XMLSchema#string': return '"' + value + '"'
-          default: return '"' + value + '"^^<' + binding.datatype + '>'
-        }
-        else if (binding['xml:lang']) return '"' + value + '"@' + binding['xml:lang']
-        else return '"' + value + '"'
-      }
     }
   }
 }

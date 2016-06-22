@@ -8,13 +8,12 @@
     },
     "filesGlob": [
         "src/**/*.ts",
-        "typings/**/*.d.ts"
+        "typings/globals/**/*.d.ts"
     ],
     "files": [
         "src/sparql-service.ts",
-        "typings/angularjs/angular.d.ts",
-        "typings/jquery/jquery.d.ts",
-        "typings/tsd.d.ts"
+        "typings/globals/angular/index.d.ts",
+        "typings/globals/jquery/index.d.ts"
     ],
     "atom": {
         "rewriteTsconfig": true
