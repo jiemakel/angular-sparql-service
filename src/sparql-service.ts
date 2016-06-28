@@ -35,10 +35,10 @@ namespace fi.seco.sparql {
       return <T>ret
     }
     public static bindingToValue(binding: ISparqlBinding): any {
-      if (binding == null) return undefined
+      if (!binding) return undefined
       if (binding.type === 'uri') return binding.value
       else if (binding.type === 'bnode') return binding.value
-      else if (binding.datatype !== null) switch (binding.datatype) {
+      else if (binding.datatype) switch (binding.datatype) {
         case 'http://www.w3.org/2001/XMLSchema#integer':
         case 'http://www.w3.org/2001/XMLSchema#decimal': return parseInt(binding.value, 10)
         case 'http://www.w3.org/2001/XMLSchema#float':
@@ -49,12 +49,12 @@ namespace fi.seco.sparql {
       return binding.value
     }
     public static bindingToString(binding: ISparqlBinding): string {
-      if (binding == null) return 'UNDEF'
+      if (!binding) return 'UNDEF'
       else {
         let value: string = binding.value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\b]/g, '\\b').replace(/\f/g, '\\f').replace(/\"/g, '\\"').replace(/\'/g, '\\\'')
         if (binding.type === 'uri') return '<' + value + '>'
         else if (binding.type === 'bnode') return '_:' + value
-        else if (binding.datatype !== null) switch (binding.datatype) {
+        else if (binding.datatype) switch (binding.datatype) {
           case 'http://www.w3.org/2001/XMLSchema#integer':
           case 'http://www.w3.org/2001/XMLSchema#decimal':
           case 'http://www.w3.org/2001/XMLSchema#double':
@@ -127,7 +127,7 @@ namespace fi.seco.sparql {
           {
             method: 'GET',
             url : endpoint,
-            params: graphIRI !== null ? { graph: graphIRI } : {'default': ''},
+            params: graphIRI ? { graph: graphIRI } : {'default': ''},
             headers: { 'Accept' : 'text/turtle' }
           },
           params
@@ -140,7 +140,7 @@ namespace fi.seco.sparql {
           {
             method: 'POST',
             url : endpoint,
-            params: graphIRI != null ? { graph: graphIRI } : {'default': ''},
+            params: graphIRI ? { graph: graphIRI } : {'default': ''},
             data: graph,
             headers: { 'Content-Type' : 'text/turtle' }
           },
@@ -154,7 +154,7 @@ namespace fi.seco.sparql {
           {
             method: 'PUT',
             url : endpoint,
-            params: graphIRI != null ? { graph: graphIRI } : {'default': ''},
+            params: graphIRI ? { graph: graphIRI } : {'default': ''},
             data: graph,
             headers: { 'Content-Type' : 'text/turtle' }
           },
@@ -168,7 +168,7 @@ namespace fi.seco.sparql {
           {
             method: 'DELETE',
             url: endpoint,
-            params: graphIRI != null ? { graph: graphIRI } : {'default': ''}
+            params: graphIRI ? { graph: graphIRI } : {'default': ''}
           },
           params
         )
