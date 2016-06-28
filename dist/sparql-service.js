@@ -22,13 +22,13 @@ var fi;
                     return ret;
                 };
                 SparqlService.bindingToValue = function (binding) {
-                    if (binding == null)
+                    if (!binding)
                         return undefined;
                     if (binding.type === 'uri')
                         return binding.value;
                     else if (binding.type === 'bnode')
                         return binding.value;
-                    else if (binding.datatype !== null)
+                    else if (binding.datatype)
                         switch (binding.datatype) {
                             case 'http://www.w3.org/2001/XMLSchema#integer':
                             case 'http://www.w3.org/2001/XMLSchema#decimal': return parseInt(binding.value, 10);
@@ -40,7 +40,7 @@ var fi;
                     return binding.value;
                 };
                 SparqlService.bindingToString = function (binding) {
-                    if (binding == null)
+                    if (!binding)
                         return 'UNDEF';
                     else {
                         var value = binding.value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\b]/g, '\\b').replace(/\f/g, '\\f').replace(/\"/g, '\\"').replace(/\'/g, '\\\'');
@@ -48,7 +48,7 @@ var fi;
                             return '<' + value + '>';
                         else if (binding.type === 'bnode')
                             return '_:' + value;
-                        else if (binding.datatype !== null)
+                        else if (binding.datatype)
                             switch (binding.datatype) {
                                 case 'http://www.w3.org/2001/XMLSchema#integer':
                                 case 'http://www.w3.org/2001/XMLSchema#decimal':
@@ -97,7 +97,7 @@ var fi;
                     return this.$http(angular.extend({
                         method: 'GET',
                         url: endpoint,
-                        params: graphIRI !== null ? { graph: graphIRI } : { 'default': '' },
+                        params: graphIRI ? { graph: graphIRI } : { 'default': '' },
                         headers: { 'Accept': 'text/turtle' }
                     }, params));
                 };
@@ -105,7 +105,7 @@ var fi;
                     return this.$http(angular.extend({
                         method: 'POST',
                         url: endpoint,
-                        params: graphIRI != null ? { graph: graphIRI } : { 'default': '' },
+                        params: graphIRI ? { graph: graphIRI } : { 'default': '' },
                         data: graph,
                         headers: { 'Content-Type': 'text/turtle' }
                     }, params));
@@ -114,7 +114,7 @@ var fi;
                     return this.$http(angular.extend({
                         method: 'PUT',
                         url: endpoint,
-                        params: graphIRI != null ? { graph: graphIRI } : { 'default': '' },
+                        params: graphIRI ? { graph: graphIRI } : { 'default': '' },
                         data: graph,
                         headers: { 'Content-Type': 'text/turtle' }
                     }, params));
@@ -123,7 +123,7 @@ var fi;
                     return this.$http(angular.extend({
                         method: 'DELETE',
                         url: endpoint,
-                        params: graphIRI != null ? { graph: graphIRI } : { 'default': '' }
+                        params: graphIRI ? { graph: graphIRI } : { 'default': '' }
                     }, params));
                 };
                 SparqlService.prototype.query = function (endpoint, query, params) {
