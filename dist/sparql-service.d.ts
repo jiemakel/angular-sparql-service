@@ -32,14 +32,14 @@ declare namespace fi.seco.sparql {
         check(endpoint: string, params?: {}): angular.IPromise<boolean>;
         checkUpdate(endpoint: string, params?: {}): angular.IPromise<boolean>;
         checkRest(endpoint: string, params?: {}): angular.IPromise<boolean>;
-        get(endpoint: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string>;
-        post(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string>;
-        put(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string>;
-        delete(endpoint: string, graphIRI: string, params?: {}): angular.IHttpPromise<string>;
+        get<T>(endpoint: string, graphIRI?: string, params?: {}): angular.IHttpPromise<T>;
+        post<T>(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<T>;
+        put<T>(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<T>;
+        delete<T>(endpoint: string, graphIRI: string, params?: {}): angular.IHttpPromise<T>;
         query<T extends {
             [id: string]: ISparqlBinding;
         }>(endpoint: string, query: string, params?: {}): angular.IHttpPromise<ISparqlBindingResult<T>>;
-        construct(endpoint: string, query: string, params?: {}): angular.IPromise<string>;
-        update(endpoint: string, query: string, params?: {}): angular.IPromise<string>;
+        construct<T>(endpoint: string, query: string, params?: {}): angular.IHttpPromise<T>;
+        update<T>(endpoint: string, query: string, params?: {}): angular.IHttpPromise<T>;
     }
 }

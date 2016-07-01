@@ -121,7 +121,7 @@ namespace fi.seco.sparql {
       )
       return deferred.promise;
     }
-    public get(endpoint: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string> {
+    public get<T>(endpoint: string, graphIRI?: string, params?: {}): angular.IHttpPromise<T> {
       return this.$http(
         angular.extend(
           {
@@ -134,7 +134,7 @@ namespace fi.seco.sparql {
         )
       )
     }
-    public post(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string> {
+    public post<T>(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<T> {
       return this.$http(
         angular.extend(
           {
@@ -148,7 +148,7 @@ namespace fi.seco.sparql {
         )
       )
     }
-    public put(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<string> {
+    public put<T>(endpoint: string, graph: string, graphIRI?: string, params?: {}): angular.IHttpPromise<T> {
       return this.$http(
         angular.extend(
           {
@@ -162,7 +162,7 @@ namespace fi.seco.sparql {
         )
       )
     }
-    public delete(endpoint: string, graphIRI: string, params?: {}): angular.IHttpPromise<string> {
+    public delete<T>(endpoint: string, graphIRI: string, params?: {}): angular.IHttpPromise<T> {
       return this.$http(
         angular.extend(
           {
@@ -203,7 +203,7 @@ namespace fi.seco.sparql {
           )
         )
     }
-    public construct(endpoint: string, query: string, params?: {}): angular.IPromise<string> {
+    public construct<T>(endpoint: string, query: string, params?: {}): angular.IHttpPromise<T> {
       if (query.length <= 2048)
         return this.$http(
           angular.extend(
@@ -232,7 +232,7 @@ namespace fi.seco.sparql {
           )
         )
     }
-    public update(endpoint: string, query: string, params?: {}): angular.IPromise<string> {
+    public update<T>(endpoint: string, query: string, params?: {}): angular.IHttpPromise<T> {
       return this.$http(
         angular.extend(
           {
