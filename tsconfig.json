@@ -1,19 +1,23 @@
 {
     "compilerOptions": {
-        "module": "amd",
+        "module": "es6",
+        "moduleResolution": "node",
         "target": "es5",
         "rootDir": "src",
         "outDir": ".tmp",
         "declaration": true
     },
+    "include": [
+        "src/**/*.ts"
+    ],
     "filesGlob": [
         "src/**/*.ts",
-        "typings/globals/**/*.d.ts"
+        "node_modules/@types/**/*.d.ts"
     ],
     "files": [
         "src/sparql-service.ts",
-        "typings/globals/angular/index.d.ts",
-        "typings/globals/jquery/index.d.ts"
+        "node_modules/@types/angular/index.d.ts",
+        "node_modules/@types/jquery/index.d.ts"
     ],
     "atom": {
         "rewriteTsconfig": true

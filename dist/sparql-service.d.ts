@@ -1,3 +1,4 @@
+/// <reference types="angular" />
 declare namespace fi.seco.sparql {
     interface ISparqlBinding {
         type: string;

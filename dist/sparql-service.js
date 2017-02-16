@@ -138,9 +138,9 @@ var fi;
                         return this.$http(angular.extend({
                             method: 'POST',
                             url: endpoint,
-                            data: query,
+                            data: 'query=' + encodeURIComponent(query),
                             headers: {
-                                'Content-Type': 'application/sparql-query',
+                                'Content-Type': 'application/x-www-form-urlencoded',
                                 'Accept': 'application/sparql-results+json'
                             }
                         }, params));
@@ -173,7 +173,7 @@ var fi;
                     }, params));
                 };
                 return SparqlService;
-            })();/*<auto_generate>*/angular.module('fi.seco.sparql').service('sparqlService',SparqlService);/*</auto_generate>*/
+            }());/*<auto_generate>*/angular.module('fi.seco.sparql').service('sparqlService',SparqlService);/*</auto_generate>*/
             sparql.SparqlService = SparqlService;
         })(sparql = seco.sparql || (seco.sparql = {}));
     })(seco = fi.seco || (fi.seco = {}));
