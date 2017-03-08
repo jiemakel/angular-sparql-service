@@ -25,7 +25,14 @@ namespace fi.seco.sparql {
 
   export class SparqlService {
     public static stringToSPARQLString(string): string {
-      return '"' + string.replace(/"/g, '\\"') + '"'
+      return '"' + string
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\t/g, '\\t')
+        .replace(/\r/g, '\\r')
+        .replace(/\f/g, '\\f')
+        + '"'
     }
     public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}): T {
       let ret: {} = {}

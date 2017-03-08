@@ -12,7 +12,14 @@ var fi;
                     this.$q = $q;
                 }/*<auto_generate>*/SparqlService.$inject = ['$http','$q']; SparqlService.$componentName = 'sparqlService'/*</auto_generate>*/
                 SparqlService.stringToSPARQLString = function (string) {
-                    return '"' + string.replace(/"/g, '\\"') + '"';
+                    return '"' + string
+                        .replace(/\\/g, '\\\\')
+                        .replace(/"/g, '\\"')
+                        .replace(/\n/g, '\\n')
+                        .replace(/\t/g, '\\t')
+                        .replace(/\r/g, '\\r')
+                        .replace(/\f/g, '\\f')
+                        + '"';
                 };
                 SparqlService.bindingsToObject = function (result) {
                     var ret = {};
