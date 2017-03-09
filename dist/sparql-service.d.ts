@@ -1,7 +1,7 @@
 /// <reference types="angular" />
 declare namespace fi.seco.sparql {
     interface ISparqlBinding {
-        type: string;
+        type: 'uri' | 'bnode' | 'literal';
         value: string;
         'xml:lang'?: string;
         datatype?: string;
