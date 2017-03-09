@@ -34,11 +34,9 @@ namespace fi.seco.sparql {
         .replace(/\f/g, '\\f')
         + '"'
     }
-    public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}): T {
-      let ret: {} = {}
-      for (let key in result) {
+    public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, ret: {} = {}): T {
+      for (let key in result)
         ret[key] = SparqlService.bindingToValue(result[key])
-      }
       return <T>ret
     }
     public static bindingToValue(binding: ISparqlBinding): any {
