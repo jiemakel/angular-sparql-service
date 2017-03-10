@@ -37,7 +37,19 @@ namespace fi.seco.sparql {
     public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, reto: {} = {}, subObjectPrefixes?: string[]): T {
       for (let key in result) {
         let ret: {} = reto
-        if (subObjectPrefixes) subObjectPrefixes.forEach(sop => { if (key.indexOf(sop) === 0) ret = ret[sop] })
+        if (subObjectPrefixes) {
+          let changed: boolean
+          do {
+            changed = false
+            subObjectPrefixes.forEach(sop => {
+              if (key.indexOf(sop) === 0) {
+                ret = ret[sop] 
+                key = key.substring(sop.length)
+                changed = true
+              }
+            })
+          } while (changed)
+        }
         if (!ret[key]) ret[key] = SparqlService.bindingToValue(result[key])
         else if (Array.isArray(ret[key])) ret[key].push(SparqlService.bindingToValue(result[key]))
         else if (typeof(ret[key]) === 'object' && result[key]) {
