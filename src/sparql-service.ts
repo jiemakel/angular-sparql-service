@@ -23,6 +23,11 @@ namespace fi.seco.sparql {
     boolean: boolean
   }
 
+  export class BindingsToObjectConfiguration {
+    public subObjectPrefixes?: string[]
+    public propertyTypeMap?: {[property: string]: 'ignore' | 'native' | 'array' | 'object' | 'node'}
+  }
+
   export class SparqlService {
     public static stringToSPARQLString(string): string {
       return '"' + string
@@ -34,14 +39,14 @@ namespace fi.seco.sparql {
         .replace(/\f/g, '\\f')
         + '"'
     }
-    public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, reto: {} = {}, subObjectPrefixes?: string[]): T {
+    public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, reto: {} = {}, config?: BindingsToObjectConfiguration): T {
       for (let key in result) {
         let ret: {} = reto
-        if (subObjectPrefixes) {
+        if (config && config.subObjectPrefixes) {
           let changed: boolean
           do {
             changed = false
-            subObjectPrefixes.forEach(sop => {
+            config.subObjectPrefixes.forEach(sop => {
               if (key.indexOf(sop) === 0) {
                 ret = ret[sop] 
                 key = key.substring(sop.length)
@@ -50,7 +55,29 @@ namespace fi.seco.sparql {
             })
           } while (changed)
         }
-        if (!ret[key]) ret[key] = SparqlService.bindingToValue(result[key])
+        if (config && config.propertyTypeMap[key]) {
+          switch (config.propertyTypeMap[key]) {
+            case 'native': ret[key] = SparqlService.bindingToValue(result[key]); break
+            case 'node': ret[key] = result[key]; break
+            case 'array':
+              if (!Array.isArray(ret[key])) ret[key] = []
+              ret[key].push(SparqlService.bindingToValue(result[key]))
+              break
+            case 'object':
+              if (!ret[key]) ret[key] = {}
+              if (result[key].type === 'literal') {
+                let key2: string = result[key].datatype
+                if (!key2) {
+                  key2 = result[key]['xml:lang']
+                  if (!key2) key2 = ''
+                }
+                ret[key][key2] = result[key].value
+              } else ret[key][result[key].value] = result[key].value
+              break
+            case 'ignore': break
+            default: throw 'Shouldn\'t happen'
+          }
+        } else if (!ret[key]) ret[key] = SparqlService.bindingToValue(result[key])
         else if (Array.isArray(ret[key])) ret[key].push(SparqlService.bindingToValue(result[key]))
         else if (typeof(ret[key]) === 'object' && result[key]) {
           if (result[key].type === 'literal') {
