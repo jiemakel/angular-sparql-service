@@ -36,8 +36,18 @@ namespace fi.seco.sparql {
     }
     public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, ret: {} = {}): T {
       for (let key in result)
-        if (Array.isArray(ret[key])) ret[key].push(SparqlService.bindingToValue(result[key]))
-        else ret[key] = SparqlService.bindingToValue(result[key])
+        if (!ret[key]) ret[key] = SparqlService.bindingToValue(result[key])
+        else if (Array.isArray(ret[key])) ret[key].push(SparqlService.bindingToValue(result[key]))
+        else if (typeof(ret[key]) === 'object' && result[key]) {
+          if (result[key].type === 'literal') {
+            let key2: string = result[key].datatype
+            if (!key2) {
+              key2 = result[key]['xml:lang']
+              if (!key2) key2 = ''
+            }
+            ret[key][key2] = result[key].value
+          } else ret[key][result[key].value] = result[key].value
+        }
       return <T>ret
     }
     public static bindingToValue(binding: ISparqlBinding): any {
