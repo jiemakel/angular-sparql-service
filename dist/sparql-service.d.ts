@@ -26,7 +26,7 @@ declare namespace fi.seco.sparql {
         static stringToSPARQLString(string: any): string;
         static bindingsToObject<T>(result: {
             [id: string]: ISparqlBinding;
-        }, ret?: {}): T;
+        }, reto?: {}, subObjectPrefixes?: string[]): T;
         static bindingToValue(binding: ISparqlBinding): any;
         static bindingToString(binding: ISparqlBinding): string;
         constructor($http: angular.IHttpService, $q: angular.IQService);
