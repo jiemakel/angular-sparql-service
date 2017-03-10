@@ -36,7 +36,8 @@ namespace fi.seco.sparql {
     }
     public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, ret: {} = {}): T {
       for (let key in result)
-        ret[key] = SparqlService.bindingToValue(result[key])
+        if (Array.isArray(ret[key])) ret[key].push(SparqlService.bindingToValue(result[key]))
+        else ret[key] = SparqlService.bindingToValue(result[key])
       return <T>ret
     }
     public static bindingToValue(binding: ISparqlBinding): any {
