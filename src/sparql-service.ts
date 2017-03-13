@@ -23,9 +23,10 @@ namespace fi.seco.sparql {
     boolean: boolean
   }
 
-  export class BindingsToObjectConfiguration {
-    public subObjectPrefixes?: string[]
-    public propertyTypeMap?: {[property: string]: 'ignore' | 'native' | 'array' | 'object' | 'node'}
+  export interface IBindingsToObjectConfiguration {
+    bindingTypes?: {[varname: string]: 'ignore' | 'single' | 'array' | {[id: string]: ''} | 'hash'}
+    bindingConverters?: {[varname: string]: (binding: ISparqlBinding, bindings: {[id: string]: ISparqlBinding}) => any }
+    subObjectPrefixes?: {[prefix: string]: {[id: string]: {}}}
   }
 
   export class SparqlService {
@@ -39,58 +40,76 @@ namespace fi.seco.sparql {
         .replace(/\f/g, '\\f')
         + '"'
     }
-    public static bindingsToObject<T>(result: {[id: string]: ISparqlBinding}, reto: {} = {}, config?: BindingsToObjectConfiguration): T {
-      for (let key in result) {
-        let ret: {} = reto
-        if (config && config.subObjectPrefixes) {
-          let changed: boolean
-          do {
-            changed = false
-            config.subObjectPrefixes.forEach(sop => {
-              if (key.indexOf(sop) === 0) {
-                ret = ret[sop] 
-                key = key.substring(sop.length)
-                changed = true
+    public static bindingsToObject<T>(bindings: {[id: string]: ISparqlBinding}, ret: {} = {}, config?: IBindingsToObjectConfiguration): T {
+      for (let bkey in bindings) {
+        let okey: string = bkey
+        let obj: {} = ret
+        let val: any
+        if (config && config.subObjectPrefixes && config.subObjectPrefixes[bkey]) {
+          if (!config.subObjectPrefixes[bkey][bindings[bkey].value]) {
+            if (config && config.bindingConverters && config.bindingConverters[bkey])
+              val = config.bindingConverters[bkey](bindings[bkey], bindings)
+            else val = {}
+            config.subObjectPrefixes[bkey][bindings[bkey].value] = val
+          } else val = config.subObjectPrefixes[bkey][bindings[bkey].value]
+        } else {
+          if (config && config.subObjectPrefixes)
+            for (let sop in config.subObjectPrefixes)
+              if (bkey.indexOf(sop) === 0) {
+                if (!config.subObjectPrefixes[sop][bindings[sop].value]) {
+                  if (config && config.bindingConverters && config.bindingConverters[sop])
+                    obj = config.bindingConverters[sop](bindings[sop], bindings)
+                  else obj = {}
+                  config.subObjectPrefixes[sop][bindings[sop].value] = obj
+                } else obj = config.subObjectPrefixes[sop][bindings[sop].value]
+                okey = bkey.substring(sop.length)
               }
-            })
-          } while (changed)
+          if (config && config.bindingConverters && config.bindingConverters[bkey])
+            val = config.bindingConverters[bkey](bindings[bkey], bindings)
+          else if (!config || !config.bindingTypes || !config.bindingTypes[bkey] || (config.bindingTypes[bkey] !== 'hash' && config.bindingTypes[bkey] !== 'ignore'))
+            val = SparqlService.bindingToValue(bindings[bkey])
         }
-        if (config && config.propertyTypeMap[key]) {
-          switch (config.propertyTypeMap[key]) {
-            case 'native': ret[key] = SparqlService.bindingToValue(result[key]); break
-            case 'node': ret[key] = result[key]; break
+        if (config && config.bindingTypes && config.bindingTypes[bkey]) {
+          switch (config.bindingTypes[bkey]) {
+            case 'ignore': break
+            case 'single': obj[okey] = val; break
             case 'array':
-              if (!Array.isArray(ret[key])) ret[key] = []
-              ret[key].push(SparqlService.bindingToValue(result[key]))
+              if (!Array.isArray(obj[okey])) obj[okey] = []
+              obj[okey].push(val)
               break
-            case 'object':
-              if (!ret[key]) ret[key] = {}
-              if (result[key].type === 'literal') {
-                let key2: string = result[key].datatype
+            case 'hash':
+              if (!obj[okey]) obj[okey] = {}
+              if (val) obj[okey][bindings[bkey].value] = val
+              else if (bindings[bkey].type === 'literal') {
+                let key2: string = bindings[bkey].datatype
                 if (!key2) {
-                  key2 = result[key]['xml:lang']
+                  key2 = bindings[bkey]['xml:lang']
                   if (!key2) key2 = ''
                 }
-                ret[key][key2] = result[key].value
-              } else ret[key][result[key].value] = result[key].value
+                obj[okey][key2] = bindings[bkey].value
+              } else obj[okey][bindings[bkey].value] = bindings[bkey].value
               break
-            case 'ignore': break
-            default: throw 'Shouldn\'t happen'
+            default: // uniqueArray
+              if (!obj[okey]) obj[okey] = []
+              if (config.bindingTypes[bkey][bindings[bkey].value] !== '') {
+                config.bindingTypes[bkey][bindings[bkey].value] = ''
+                obj[okey].push(val)
+              }
           }
-        } else if (!ret[key]) ret[key] = SparqlService.bindingToValue(result[key])
-        else if (Array.isArray(ret[key])) ret[key].push(SparqlService.bindingToValue(result[key]))
-        else if (typeof(ret[key]) === 'object' && result[key]) {
-          if (result[key].type === 'literal') {
-            let key2: string = result[key].datatype
+        } else if (Array.isArray(obj[okey])) obj[okey].push(val)
+        else if (typeof(obj[okey]) === 'object' && bindings[bkey]) {
+          if (bindings[bkey].type === 'literal') {
+            let key2: string = bindings[bkey].datatype
             if (!key2) {
-              key2 = result[key]['xml:lang']
+              key2 = bindings[bkey]['xml:lang']
               if (!key2) key2 = ''
             }
-            ret[key][key2] = result[key].value
-          } else ret[key][result[key].value] = result[key].value
+            obj[okey][key2] = bindings[bkey].value
+          } else obj[okey][bindings[bkey].value] = bindings[bkey].value
         }
+        else obj[okey] = val
       }
-      return <T>reto
+      return <T>ret
     }
     public static bindingToValue(binding: ISparqlBinding): any {
       if (!binding) return undefined

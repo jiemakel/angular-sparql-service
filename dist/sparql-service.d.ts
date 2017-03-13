@@ -20,19 +20,30 @@ declare namespace fi.seco.sparql {
     interface ISparqlAskResult {
         boolean: boolean;
     }
-    class BindingsToObjectConfiguration {
-        subObjectPrefixes?: string[];
-        propertyTypeMap?: {
-            [property: string]: 'ignore' | 'native' | 'array' | 'object' | 'node';
+    interface IBindingsToObjectConfiguration {
+        bindingTypes?: {
+            [varname: string]: 'ignore' | 'single' | 'array' | {
+                [id: string]: '';
+            } | 'hash';
+        };
+        bindingConverters?: {
+            [varname: string]: (binding: ISparqlBinding, bindings: {
+                [id: string]: ISparqlBinding;
+            }) => any;
+        };
+        subObjectPrefixes?: {
+            [prefix: string]: {
+                [id: string]: {};
+            };
         };
     }
     class SparqlService {
         private $http;
         private $q;
         static stringToSPARQLString(string: any): string;
-        static bindingsToObject<T>(result: {
+        static bindingsToObject<T>(bindings: {
             [id: string]: ISparqlBinding;
-        }, reto?: {}, config?: BindingsToObjectConfiguration): T;
+        }, ret?: {}, config?: IBindingsToObjectConfiguration): T;
         static bindingToValue(binding: ISparqlBinding): any;
         static bindingToString(binding: ISparqlBinding): string;
         constructor($http: angular.IHttpService, $q: angular.IQService);
