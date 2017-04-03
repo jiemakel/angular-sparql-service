@@ -3,15 +3,15 @@
         "module": "es6",
         "moduleResolution": "node",
         "target": "es5",
+        "rootDir": "src",
+        "outDir": "dist",
         "declaration": true
     },
     "include": [
-        "src/**/*.ts",
-        "spec/**/*.ts"
+        "src/**/*.ts"
     ],
     "filesGlob": [
         "src/**/*.ts",
-        "spec/**/*.ts",
         "node_modules/@types/**/*.d.ts"
     ],
     "files": [

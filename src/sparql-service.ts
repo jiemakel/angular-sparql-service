@@ -24,9 +24,13 @@ namespace fi.seco.sparql {
   }
 
   export interface IBindingsToObjectConfiguration {
-    bindingTypes?: {[varname: string]: 'ignore' | 'single' | 'array' | {[id: string]: ''} | 'hash'}
+    bindingTypes?: {[varname: string]: 'ignore' | 'single' | 'array' | 'uniqueArray' | 'hash'}
     bindingConverters?: {[varname: string]: (binding: ISparqlBinding, bindings: {[id: string]: ISparqlBinding}) => any }
-    subObjectPrefixes?: {[prefix: string]: {[id: string]: {}}}
+  }
+
+  export class UniqueObjectTracker {
+    public objectsById?: {[id: string]: {}} = {}
+    public assignmentsById?: {[id: string]: {}} = {}
   }
 
   export class SparqlService {
@@ -40,35 +44,60 @@ namespace fi.seco.sparql {
         .replace(/\f/g, '\\f')
         + '"'
     }
-    public static bindingsToObject<T>(bindings: {[id: string]: ISparqlBinding}, ret: {} = {}, config?: IBindingsToObjectConfiguration): T {
+    public static bindingsToObject<T>(bindings: {[id: string]: ISparqlBinding}, ret: {} = {}, config?: IBindingsToObjectConfiguration, tracker?: UniqueObjectTracker): T {
       for (let bkey in bindings) {
         let okey: string = bkey
         let obj: {} = ret
+        let subObjectPrefixIndex: number = okey.indexOf('_')
+        let lastSubObjectPrefixIndex: number = -1
+        let assignmentsById: {[id: string]: {}}
+        if (tracker) assignmentsById = tracker.assignmentsById
+        while (subObjectPrefixIndex !== -1) {
+          okey = bkey.substring(lastSubObjectPrefixIndex + 1, subObjectPrefixIndex)
+          let sbkey: string = bkey.substring(0, subObjectPrefixIndex)
+          if (config && config.bindingTypes && config.bindingTypes[sbkey] && config.bindingTypes[sbkey] === 'uniqueArray') {
+            if (!obj[okey]) obj[okey] = []
+            if (!tracker.objectsById[sbkey]) tracker.objectsById[sbkey] = {}
+            let tmp: any
+            if (!tracker.objectsById[sbkey][bindings[sbkey].value]) {
+              tmp = config.bindingConverters[sbkey](bindings[sbkey], bindings)
+              tracker.objectsById[sbkey][bindings[sbkey].value] = tmp
+            } else tmp = tracker.objectsById[sbkey][bindings[sbkey].value]
+            if (!assignmentsById[sbkey]) assignmentsById[sbkey] = {}
+            if (!assignmentsById[sbkey][bindings[sbkey].value]) {
+              obj[sbkey].push(tmp)
+              assignmentsById[sbkey][bindings[sbkey].value] = {}
+            }
+            assignmentsById = assignmentsById[sbkey][bindings[sbkey].value]
+            obj = tmp
+          } else {
+            if (config && config.bindingTypes && config.bindingTypes[sbkey] && config.bindingTypes[sbkey] === 'single') {
+              if (!tracker.objectsById[sbkey]) tracker.objectsById[sbkey] = {}
+              if (!tracker.objectsById[sbkey][bindings[sbkey].value]) {
+                obj[okey] = config.bindingConverters[sbkey](bindings[sbkey], bindings)
+                tracker.objectsById[sbkey][bindings[sbkey].value] = obj[okey]
+              }
+            } else if (!obj[okey]) obj[okey] = config.bindingConverters[sbkey](bindings[sbkey], bindings)
+            obj = obj[okey]
+          }
+          lastSubObjectPrefixIndex = subObjectPrefixIndex
+          subObjectPrefixIndex = bkey.indexOf('_', subObjectPrefixIndex + 1)
+        }
+        okey = bkey.substring(lastSubObjectPrefixIndex + 1)
         let val: any
-        if (config && config.subObjectPrefixes && config.subObjectPrefixes[bkey]) {
-          if (!config.subObjectPrefixes[bkey][bindings[bkey].value]) {
+        if (tracker && config && config.bindingTypes && (config.bindingTypes[bkey] === 'single' || config.bindingTypes[bkey] === 'uniqueArray')) {
+          if (!tracker.objectsById[bkey]) tracker.objectsById[bkey] = {}
+          if (!tracker.objectsById[bkey][bindings[bkey].value]) {
             if (config && config.bindingConverters && config.bindingConverters[bkey])
               val = config.bindingConverters[bkey](bindings[bkey], bindings)
-            else val = {}
-            config.subObjectPrefixes[bkey][bindings[bkey].value] = val
-          } else val = config.subObjectPrefixes[bkey][bindings[bkey].value]
-        } else {
-          if (config && config.subObjectPrefixes)
-            for (let sop in config.subObjectPrefixes)
-              if (bkey.indexOf(sop) === 0) {
-                if (!config.subObjectPrefixes[sop][bindings[sop].value]) {
-                  if (config && config.bindingConverters && config.bindingConverters[sop])
-                    obj = config.bindingConverters[sop](bindings[sop], bindings)
-                  else obj = {}
-                  config.subObjectPrefixes[sop][bindings[sop].value] = obj
-                } else obj = config.subObjectPrefixes[sop][bindings[sop].value]
-                okey = bkey.substring(sop.length)
-              }
-          if (config && config.bindingConverters && config.bindingConverters[bkey])
+            else
+              val = SparqlService.bindingToValue(bindings[bkey])
+            tracker.objectsById[bkey][bindings[bkey].value] = val
+          } else val = tracker.objectsById[bkey][bindings[bkey].value]
+        } else if (config && config.bindingConverters && config.bindingConverters[bkey])
             val = config.bindingConverters[bkey](bindings[bkey], bindings)
-          else if (!config || !config.bindingTypes || !config.bindingTypes[bkey] || (config.bindingTypes[bkey] !== 'hash' && config.bindingTypes[bkey] !== 'ignore'))
+        else if (!config || !config.bindingTypes || !config.bindingTypes[bkey] || (config.bindingTypes[bkey] !== 'hash' && config.bindingTypes[bkey] !== 'ignore'))
             val = SparqlService.bindingToValue(bindings[bkey])
-        }
         if (config && config.bindingTypes && config.bindingTypes[bkey]) {
           switch (config.bindingTypes[bkey]) {
             case 'ignore': break
@@ -91,21 +120,27 @@ namespace fi.seco.sparql {
               break
             default: // uniqueArray
               if (!obj[okey]) obj[okey] = []
-              if (config.bindingTypes[bkey][bindings[bkey].value] !== '') {
-                config.bindingTypes[bkey][bindings[bkey].value] = ''
+              if (!assignmentsById[bkey]) assignmentsById[bkey] = {}
+              if (!assignmentsById[bkey][bindings[bkey].value]) {
+                assignmentsById[bkey][bindings[bkey].value] = val
                 obj[okey].push(val)
               }
           }
         } else if (Array.isArray(obj[okey])) obj[okey].push(val)
-        else if (typeof(obj[okey]) === 'object' && bindings[bkey]) {
+        else if (obj[okey] !== null && typeof(obj[okey]) === 'object' && bindings[bkey]) {
           if (bindings[bkey].type === 'literal') {
             let key2: string = bindings[bkey].datatype
             if (!key2) {
               key2 = bindings[bkey]['xml:lang']
               if (!key2) key2 = ''
             }
-            obj[okey][key2] = bindings[bkey].value
-          } else obj[okey][bindings[bkey].value] = bindings[bkey].value
+            if (config && config.bindingConverters && config.bindingConverters[bkey])
+              obj[okey][key2] = config.bindingConverters[bkey](bindings[bkey], bindings)
+            else
+              obj[okey][key2] = bindings[bkey].value
+          } else if (config && config.bindingConverters && config.bindingConverters[bkey])
+            obj[okey][bindings[bkey].value] = config.bindingConverters[bkey](bindings[bkey], bindings)
+          else obj[okey][bindings[bkey].value] = bindings[bkey].value
         }
         else obj[okey] = val
       }

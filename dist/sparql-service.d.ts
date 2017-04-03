@@ -22,19 +22,20 @@ declare namespace fi.seco.sparql {
     }
     interface IBindingsToObjectConfiguration {
         bindingTypes?: {
-            [varname: string]: 'ignore' | 'single' | 'array' | {
-                [id: string]: '';
-            } | 'hash';
+            [varname: string]: 'ignore' | 'single' | 'array' | 'uniqueArray' | 'hash';
         };
         bindingConverters?: {
             [varname: string]: (binding: ISparqlBinding, bindings: {
                 [id: string]: ISparqlBinding;
             }) => any;
         };
-        subObjectPrefixes?: {
-            [prefix: string]: {
-                [id: string]: {};
-            };
+    }
+    class UniqueObjectTracker {
+        objectsById?: {
+            [id: string]: {};
+        };
+        assignmentsById?: {
+            [id: string]: {};
         };
     }
     class SparqlService {
@@ -43,7 +44,7 @@ declare namespace fi.seco.sparql {
         static stringToSPARQLString(string: any): string;
         static bindingsToObject<T>(bindings: {
             [id: string]: ISparqlBinding;
-        }, ret?: {}, config?: IBindingsToObjectConfiguration): T;
+        }, ret?: {}, config?: IBindingsToObjectConfiguration, tracker?: UniqueObjectTracker): T;
         static bindingToValue(binding: ISparqlBinding): any;
         static bindingToString(binding: ISparqlBinding): string;
         constructor($http: angular.IHttpService, $q: angular.IQService);

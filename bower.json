@@ -18,5 +18,8 @@
     "tslint.json",
     "package.json",
     "gulpfile.js"
-  ]
+  ],
+  "devDependencies": {
+    "angular-mocks": "^1.6.4"
+  }
 }
