@@ -1,25 +1,11 @@
 {
-    "compilerOptions": {
-        "module": "es6",
-        "moduleResolution": "node",
-        "target": "es5",
-        "declaration": true
-    },
-    "include": [
-        "src/**/*.ts",
-        "spec/**/*.ts"
-    ],
-    "filesGlob": [
-        "src/**/*.ts",
-        "spec/**/*.ts",
-        "node_modules/@types/**/*.d.ts"
-    ],
-    "files": [
-        "src/sparql-service.ts",
-        "node_modules/@types/angular/index.d.ts",
-        "node_modules/@types/jquery/index.d.ts"
-    ],
-    "atom": {
-        "rewriteTsconfig": true
-    }
+  "compilerOptions": {
+    "target": "es5"
+  },
+  "files": [
+    "src/sparql-service.ts",
+    "spec/sparql-service.spec.ts",
+    "node_modules/@types/jest/index.d.ts",
+    "node_modules/@types/angular-mocks/index.d.ts"
+  ]
 }

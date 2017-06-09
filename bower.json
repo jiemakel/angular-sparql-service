@@ -1,6 +1,6 @@
 {
   "name": "angular-sparql-service",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "authors": [
     "Eetu Mäkelä <eetu.makela@iki.fi>"
   ],
@@ -17,9 +17,6 @@
     "tsd.json",
     "tslint.json",
     "package.json",
-    "gulpfile.js"
-  ],
-  "devDependencies": {
-    "angular-mocks": "^1.6.4"
-  }
+    "webpack.config.js"
+  ]
 }
