@@ -30,7 +30,7 @@ export interface IBindingsToObjectConfiguration {
 
 export class UniqueObjectTracker {
   public objectsById?: {[id: string]: {}} = {}
-  public assignmentsById?: {[id: string]: {}} = {}
+  public assignmentsById?: {[trackId: string]: {[id: string]: {}}} = {}
 }
 
 export class SparqlService {
@@ -44,14 +44,17 @@ export class SparqlService {
       .replace(/\f/g, '\\f')
       + '"'
   }
-  public static bindingsToObject<T>(bindings: {[id: string]: ISparqlBinding}, ret: {} = {}, config?: IBindingsToObjectConfiguration, tracker?: UniqueObjectTracker): T {
+  public static bindingsToObject<T>(bindings: {[id: string]: ISparqlBinding}, ret: {} = {}, config?: IBindingsToObjectConfiguration, trackId?: string, tracker?: UniqueObjectTracker): T {
     for (let bkey in bindings) {
       let okey: string = bkey
       let obj: {} = ret
       let subObjectPrefixIndex: number = okey.indexOf('_')
       let lastSubObjectPrefixIndex: number = -1
       let assignmentsById: {[id: string]: {}}
-      if (tracker) assignmentsById = tracker.assignmentsById
+      if (tracker) {
+        if (!tracker.assignmentsById[trackId]) tracker.assignmentsById[trackId] = {}
+        assignmentsById = tracker.assignmentsById[trackId]
+      }
       while (subObjectPrefixIndex !== -1) {
         okey = bkey.substring(lastSubObjectPrefixIndex + 1, subObjectPrefixIndex)
         let sbkey: string = bkey.substring(0, subObjectPrefixIndex)

@@ -115,7 +115,7 @@ var SparqlService = (function () {
             .replace(/\f/g, '\\f')
             + '"';
     };
-    SparqlService.bindingsToObject = function (bindings, ret, config, tracker) {
+    SparqlService.bindingsToObject = function (bindings, ret, config, trackId, tracker) {
         if (ret === void 0) { ret = {}; }
         for (var bkey in bindings) {
             var okey = bkey;
@@ -123,8 +123,11 @@ var SparqlService = (function () {
             var subObjectPrefixIndex = okey.indexOf('_');
             var lastSubObjectPrefixIndex = -1;
             var assignmentsById = void 0;
-            if (tracker)
-                assignmentsById = tracker.assignmentsById;
+            if (tracker) {
+                if (!tracker.assignmentsById[trackId])
+                    tracker.assignmentsById[trackId] = {};
+                assignmentsById = tracker.assignmentsById[trackId];
+            }
             while (subObjectPrefixIndex !== -1) {
                 okey = bkey.substring(lastSubObjectPrefixIndex + 1, subObjectPrefixIndex);
                 var sbkey = bkey.substring(0, subObjectPrefixIndex);

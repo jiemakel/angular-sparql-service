@@ -1,8 +1,9 @@
 'use strict'
+import { IBindingsToObjectConfiguration } from '../dist/sparql-service';
 
-import * as angular from 'angular'
+import * as angular from 'angular';
 
-import 'angular-mocks'
+import 'angular-mocks';
 
 import {SparqlService, ISparqlBinding, UniqueObjectTracker} from '../src/sparql-service'
 
@@ -81,7 +82,7 @@ describe('Angular SPARQL service', () => {
       bindingTypes: {
         array: 'ignore',
         obj: 'array'
-      }
+      },
     })
     expect(obj.array.length).toBe(2)
     expect(Array.isArray(obj.obj)).toBe(true)
@@ -91,12 +92,12 @@ describe('Angular SPARQL service', () => {
       bindingTypes: {
         array: 'uniqueArray',
       }
-    },                             tracker)
+    }, null, tracker)
     SparqlService.bindingsToObject(bindings, obj, {
       bindingTypes: {
         array: 'uniqueArray',
       }
-    },                             tracker)
+    }, null, tracker)
     expect(obj.array.length).toBe(1)
   })
 
@@ -113,6 +114,7 @@ describe('Angular SPARQL service', () => {
       value: 'objvalue'
     }
     SparqlService.bindingsToObject(bindings, obj, {
+      bindingTypes: { array: 'array' },
       bindingConverters: {
         array: (binding: ISparqlBinding) => 'arrayvalue2',
         obj: (binding: ISparqlBinding) => 'objvalue2'
@@ -169,7 +171,7 @@ describe('Angular SPARQL service', () => {
         subObjArray_array: (binding: ISparqlBinding) => 'arrayvalue2',
         subObjArray_obj: (binding: ISparqlBinding) => 'objvalue2'
       }
-    },                             tracker)
+    }, null, tracker)
     SparqlService.bindingsToObject(bindings, obj, {
       bindingTypes: { subObjArray: 'uniqueArray', subObjArray_array: 'uniqueArray'},
       bindingConverters: {
@@ -177,7 +179,7 @@ describe('Angular SPARQL service', () => {
         subObjArray_array: (binding: ISparqlBinding) => 'arrayvalue2',
         subObjArray_obj: (binding: ISparqlBinding) => 'objvalue2'
       }
-    },                             tracker)
+    }, null, tracker)
     expect(obj.subObjArray[0].array[0]).toBe('arrayvalue2')
     expect(obj.subObjArray[0].array.length).toBe(1)
     expect(obj.subObjArray[0].obj['en']).toBe('objvalue2')
@@ -209,7 +211,7 @@ describe('Angular SPARQL service', () => {
         subObjArray_array: (binding: ISparqlBinding) => 'arrayvalue2',
         subObjArray_obj: (binding: ISparqlBinding) => 'objvalue2'
       }
-    },                             tracker)
+    }, null, tracker)
     expect(obj.subObjArray[0].array[0]).toBe('arrayvalue2')
     expect(obj.subObjArray[0].array.length).toBe(1)
     expect(obj.subObjArray[0].obj['en']).toBe('objvalue2')
@@ -225,7 +227,7 @@ describe('Angular SPARQL service', () => {
         subObjArray_array: (binding: ISparqlBinding) => 'arrayvalue3',
         subObjArray_obj: (binding: ISparqlBinding) => 'objvalue3'
       }
-    },                             tracker)
+    }, null, tracker)
     expect(obj.subObjArray.length).toBe(2)
     expect(obj.subObjArray[0].array[0]).toBe('arrayvalue2')
     expect(obj.subObjArray[0].array.length).toBe(1)
@@ -235,6 +237,38 @@ describe('Angular SPARQL service', () => {
     expect(obj.subObjArray[1].array[0]).toBe('arrayvalue2')
     expect(obj.subObjArray[1].array.length).toBe(1)
     expect(obj.subObjArray[1].obj['en']).toBe('objvalue3')
+  })
+
+  it('should support tracking for multiple objects', () => {
+    let obj1: TestObj = new TestObj()
+    let obj2: TestObj = new TestObj()
+    let bindings: {[varName: string]: ISparqlBinding} = {}
+    bindings['array'] = {
+      type: 'literal',
+      value: 'arrayvalue'
+    }
+    bindings['obj'] = {
+      type: 'literal',
+      'xml:lang': 'en',
+      value: 'objvalue'
+    }
+    bindings['singleValue'] = {
+      type: 'literal',
+      'xml:lang': 'en',
+      value: 'singlevalue'
+    }
+    let conf: IBindingsToObjectConfiguration = {
+      bindingTypes: { singleValue: 'single', array: 'uniqueArray'}    
+    }
+    let tracker: UniqueObjectTracker = new UniqueObjectTracker()
+    SparqlService.bindingsToObject(bindings, obj1, conf, '1', tracker)
+    SparqlService.bindingsToObject(bindings, obj2, conf, '2', tracker)
+    expect(obj1.array[0]).toBe('arrayvalue')
+    expect(obj1.obj['en']).toBe('objvalue')
+    expect(obj1.singleValue).toBe('singlevalue')
+    expect(obj2.array[0]).toBe('arrayvalue')
+    expect(obj2.obj['en']).toBe('objvalue')
+    expect(obj2.singleValue).toBe('singlevalue')
   })
 
   it('should handle nested subobjects', () => {
@@ -264,7 +298,7 @@ describe('Angular SPARQL service', () => {
         subObj_subObj: (binding: ISparqlBinding) => new TestObj(),
         subObjs: (binding: ISparqlBinding) => new TestObj(),
       }
-    },                             tracker)
+    }, null, tracker)
     expect(obj.name).toBe('rname')
     expect(obj.subObj.name).toBe('soname')
     expect(obj.subObj.subObj).toBeDefined()

@@ -35,7 +35,9 @@ export declare class UniqueObjectTracker {
         [id: string]: {};
     };
     assignmentsById?: {
-        [id: string]: {};
+        [trackId: string]: {
+            [id: string]: {};
+        };
     };
 }
 export declare class SparqlService {
@@ -44,7 +46,7 @@ export declare class SparqlService {
     static stringToSPARQLString(string: any): string;
     static bindingsToObject<T>(bindings: {
         [id: string]: ISparqlBinding;
-    }, ret?: {}, config?: IBindingsToObjectConfiguration, tracker?: UniqueObjectTracker): T;
+    }, ret?: {}, config?: IBindingsToObjectConfiguration, trackId?: string, tracker?: UniqueObjectTracker): T;
     static bindingToValue(binding: ISparqlBinding): any;
     static bindingToString(binding: ISparqlBinding): string;
     constructor($http: angular.IHttpService, $q: angular.IQService);
