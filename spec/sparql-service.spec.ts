@@ -100,7 +100,34 @@ describe('Angular SPARQL service', () => {
     }, null, tracker)
     expect(obj.array.length).toBe(1)
   })
-
+  it('should use given handlers', () => {
+    let obj: TestObj = new TestObj()
+    let bindings: {[varName: string]: ISparqlBinding} = {}
+    bindings['array'] = {
+      type: 'literal',
+      value: 'arrayvalue'
+    }
+    bindings['obj'] = {
+      type: 'literal',
+      'xml:lang': 'en',
+      value: 'objvalue'
+    }
+    SparqlService.bindingsToObject(bindings, obj, {
+      bindingConverters: {
+        array: (binding: ISparqlBinding) => 'arrayvalue2',
+        obj: (binding: ISparqlBinding) => 'objvalue2'
+      },
+      bindingHandlers: {
+        array: (prop, val) => {
+          obj[prop].push(val)
+          obj[prop+'magic']=val+'magic'
+        }
+      }
+    })
+    expect(obj.array[0]).toBe('arrayvalue2')
+    expect(obj['arraymagic']).toBe('arrayvalue2magic')
+    expect(obj.obj['en']).toBe('objvalue2')
+  })
   it('should use given converters', () => {
     let obj: TestObj = new TestObj()
     let bindings: {[varName: string]: ISparqlBinding} = {}

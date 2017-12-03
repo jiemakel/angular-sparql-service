@@ -29,6 +29,11 @@ export interface IBindingsToObjectConfiguration {
             [id: string]: ISparqlBinding;
         }) => any;
     };
+    bindingHandlers?: {
+        [varname: string]: (prop: any, value: any, binding: ISparqlBinding, bindings: {
+            [id: string]: ISparqlBinding;
+        }) => void;
+    };
 }
 export declare class UniqueObjectTracker {
     objectsById?: {
