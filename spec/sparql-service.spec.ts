@@ -118,7 +118,7 @@ describe('Angular SPARQL service', () => {
         obj: (binding: ISparqlBinding) => 'objvalue2'
       },
       bindingHandlers: {
-        array: (prop, val) => {
+        array: (obj, prop, val) => {
           obj[prop].push(val)
           obj[prop+'magic']=val+'magic'
         }
