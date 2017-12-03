@@ -26,7 +26,7 @@ export interface ISparqlAskResult {
 export interface IBindingsToObjectConfiguration {
   bindingTypes?: {[varname: string]: 'ignore' | 'single' | 'array' | 'uniqueArray' | 'hash'}
   bindingConverters?: {[varname: string]: (binding: ISparqlBinding, bindings: {[id: string]: ISparqlBinding}) => any }
-  bindingHandlers?: {[varname: string]: (obj: any, prop: any, value: any, binding: ISparqlBinding, bindings: {[id: string]: ISparqlBinding}) => void }
+  bindingHandlers?: {[varname: string]: (obj: any, prop: any, value: any, bkey: string, binding: ISparqlBinding, bindings: {[id: string]: ISparqlBinding}) => void }
 }
 
 export class UniqueObjectTracker {
@@ -102,7 +102,7 @@ export class SparqlService {
           val = config.bindingConverters[bkey](bindings[bkey], bindings)
       else if (!config || !config.bindingTypes || !config.bindingTypes[bkey] || (config.bindingTypes[bkey] !== 'hash' && config.bindingTypes[bkey] !== 'ignore'))
           val = SparqlService.bindingToValue(bindings[bkey])
-      if (config && config.bindingHandlers && config.bindingHandlers[bkey]) config.bindingHandlers[bkey](obj, okey, val, bindings[bkey],bindings)
+      if (config && config.bindingHandlers && config.bindingHandlers[bkey]) config.bindingHandlers[bkey](obj, okey, val, bkey, bindings[bkey],bindings)
       else if (config && config.bindingTypes && config.bindingTypes[bkey]) {
         switch (config.bindingTypes[bkey]) {
           case 'ignore': break

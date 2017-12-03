@@ -30,7 +30,7 @@ export interface IBindingsToObjectConfiguration {
         }) => any;
     };
     bindingHandlers?: {
-        [varname: string]: (prop: any, value: any, binding: ISparqlBinding, bindings: {
+        [varname: string]: (obj: any, prop: any, value: any, bkey: string, binding: ISparqlBinding, bindings: {
             [id: string]: ISparqlBinding;
         }) => void;
     };

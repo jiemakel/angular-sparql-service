@@ -188,7 +188,7 @@ var SparqlService = (function () {
             else if (!config || !config.bindingTypes || !config.bindingTypes[bkey] || (config.bindingTypes[bkey] !== 'hash' && config.bindingTypes[bkey] !== 'ignore'))
                 val = SparqlService.bindingToValue(bindings[bkey]);
             if (config && config.bindingHandlers && config.bindingHandlers[bkey])
-                config.bindingHandlers[bkey](okey, val, bindings[bkey], bindings);
+                config.bindingHandlers[bkey](obj, okey, val, bkey, bindings[bkey], bindings);
             else if (config && config.bindingTypes && config.bindingTypes[bkey]) {
                 switch (config.bindingTypes[bkey]) {
                     case 'ignore': break;
